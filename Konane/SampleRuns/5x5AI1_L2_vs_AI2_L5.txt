@@ -1,0 +1,102 @@
+Game Choice
+1. Human vs Human
+2. Human vs AI
+3. AI vs AI
+Your Choice: 3
+AI Level?: 2
+AI #2 Level?: 5
+Board Size
+Rows?: 5
+Cols?: 5
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02 X O X O X
+03 O X O X O
+04 X O X O X
+05 O X O X O
+
+Removing the first marbles!
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02 X     O X
+03 O X O X O
+04 X O X O X
+05 O X O X O
+
+AI #1's turn!
+Thinking...
+AI #1 says "I would be requesting a move from (4,2) which is occupied by: white to (2,2) which is currently: free"
+
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02 X O   O X
+03 O   O X O
+04 X   X O X
+05 O X O X O
+
+AI #2's turn!
+Thinking...
+AI #2 says "I would be requesting a move from (2,5) which is occupied by: black to (2,3) which is currently: free"
+
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02 X O X
+03 O   O X O
+04 X   X O X
+05 O X O X O
+
+AI #1's turn!
+Thinking...
+AI #1 says "I would be requesting a move from (2,2) which is occupied by: white to (2,4) which is currently: free"
+
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02 X     O
+03 O   O X O
+04 X   X O X
+05 O X O X O
+
+AI #2's turn!
+Thinking...
+AI #2 says "I would be requesting a move from (2,1) which is occupied by: black to (2,5) which is currently: free"
+
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02         X
+03 O   O X O
+04 X   X O X
+05 O X O X O
+
+AI #1's turn!
+Thinking...
+AI #1 says "I would be requesting a move from (4,4) which is occupied by: white to (4,2) which is currently: free"
+
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02         X
+03 O   O X O
+04 X O     X
+05 O X O X O
+
+AI #2's turn!
+Thinking...
+AI #2 says "I would be requesting a move from (4,1) which is occupied by: black to (4,3) which is currently: free"
+
+Board Status(5X5) & board #1
+   A B C D E
+01 O X O X O
+02         X
+03 O   O X O
+04     X   X
+05 O X O X O
+
+AI #1's turn!
+AI #1 Looses!!
+

@@ -36,23 +36,23 @@ public class RouteOptimization {
         Map<String, Node> distanceMap=rd.getDistanceMap();
 //        rd.readDistanceMap();
 
-  //      System.out.print("Longitude File location: "); longsFile=sc.nextLine();
+//      System.out.print("Longitude File location: "); longsFile=sc.nextLine();
         ReadLongs rl=new ReadLongs("G:\\AI\\Assignments\\Assignment1\\RouteOptimization\\src\\routeoptimization\\DataSet\\long1.txt");
 //        ReadLongs rl=new ReadLongs(longsFile);
         Map<String, Integer> longsMap=rl.getLongMap();
 //        rl.readLongMap();
 
-//+++++ GUI BUILD UP
+	// GUI Object
 
         GUI guiFrame=new GUI("Route Optimization", distanceMap, longsMap);
         guiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         guiFrame.setSize(800,700);
         guiFrame.setVisible(true);
-//++++++++++++++++++++++++++++++++++++++++++++++++        
-
+/* Command line Code for debugging
+		
         System.out.print("Source: "); source=sc.nextLine();
         System.out.print("Destination: ");destination=sc.nextLine();
-/*
+
         System.out.println("\nBFS");
         BFS routeBFS=new BFS(guiFrame.source, destination, distanceMap);
         routeBFS.findRoute();

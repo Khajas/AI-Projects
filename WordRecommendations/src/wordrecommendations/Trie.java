@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * @author Anwar
  */
 public class Trie {
-    private Node root;
+    private final Node root;
     public Trie(){
         root=new Node('$');
     }
@@ -67,8 +67,7 @@ public class Trie {
             if(ch=='*')
                 n=childNodes.get(26);
             else n=childNodes.get(ch-'a');
-            if(n==null) return false;
-            return true;
+            return n != null;
         }
         public char getChar(){
             return ch;
@@ -88,22 +87,24 @@ public class Trie {
             l.remove(0);
         }
     }
-    private void printEachWord(Node n){
+    private void printEachWord(Node n, String word_so_far){
         if(n==null){
             return;
         }
         if(n.getChar()=='*'){
-            System.out.println();
+            System.out.println(word_so_far);
             return;
         }
-        System.out.print(n.getChar());
         ArrayList<Node> arr=n.getAllChildNodes();
         for(Node nn: arr){
-            printEachWord(nn);
+            if(nn!=null)
+                if(nn.getChar()!='*')
+                    printEachWord(nn,word_so_far+nn.getChar());
+                else printEachWord(nn,word_so_far);
         }
     }
-    public void printEachWord(){
-        this.printEachWord(root);
+    public void printEachWord(String word_so_far){
+        this.printEachWord(root, word_so_far);
     }
     public void getSuggestion(String word){
         if(word==null || word.isEmpty()) return;
@@ -121,12 +122,10 @@ public class Trie {
             }
         }
         if(arr.get(26)==null){
-            System.out.println("Recommendations for "+word+": ");
+            System.out.println("Do you mean? ");
             for(Node nn: n.getAllChildNodes()){
-                if(nn!=null){
-                    System.out.print(word);
-                    printEachWord(nn);
-                }
+                if(nn!=null)
+                    printEachWord(nn, word+nn.getChar());
             }
         }else{
             System.out.println("Is A complete word!!");

@@ -28,6 +28,10 @@ public class WordRecommendations {
         }
 //        print(trie);
         String input_word=getUserInput();
+        while(input_word.equalsIgnoreCase("$")){
+            System.out.print("Type a complete or partial word: ");
+            input_word=getUserInput();
+        }
         trie.getSuggestion(input_word);
     }
     private static String getUserInput(){
@@ -41,7 +45,7 @@ public class WordRecommendations {
         while(sc.hasNext(pattern)){
             if(sc.hasNext("\n")) continue;
             String word=sc.next(pattern);
-//            System.out.println(word);
+//          System.out.println(word); // shows word read
             trie.addWord(word);
         }
     }

@@ -39,40 +39,6 @@ public class Trie {
                 return false;
         return true;
     }
-    private class Node{
-        char ch;
-        ArrayList<Node> childNodes;
-        Node(char ch){
-            this.ch=ch;
-            childNodes=new ArrayList<>();
-            for(int i=0;i<27;++i){
-                childNodes.add(null);
-            }
-        }
-        public Node addChild(char ch){
-            if(ch=='*'){
-                childNodes.set(26, new Node(ch));
-                return childNodes.get(26);
-            }
-            ch=Character.toLowerCase(ch);
-            Node n=childNodes.get(ch-'a');
-            if(n==null) childNodes.set(ch-'a', new Node(ch));
-            return childNodes.get(ch-'a');
-        }
-        public ArrayList<Node> getAllChildNodes(){
-            return this.childNodes;
-        }
-        public boolean hasChild(char ch){
-            Node n;
-            if(ch=='*')
-                n=childNodes.get(26);
-            else n=childNodes.get(ch-'a');
-            return n != null;
-        }
-        public char getChar(){
-            return ch;
-        }
-    }
     public void printTrie(){
         ArrayList<Node> l=new ArrayList<>();
         l.add(root);
@@ -97,10 +63,9 @@ public class Trie {
         }
         ArrayList<Node> arr=n.getAllChildNodes();
         for(Node nn: arr){
-            if(nn!=null)
-                if(nn.getChar()!='*')
-                    printEachWord(nn,word_so_far+nn.getChar());
-                else printEachWord(nn,word_so_far);
+            if(nn!=null && nn.getChar()!='*')
+                printEachWord(nn,word_so_far+nn.getChar());
+            else printEachWord(nn,word_so_far);
         }
     }
     public void printEachWord(String word_so_far){
@@ -109,22 +74,19 @@ public class Trie {
     public void getSuggestion(String word){
         if(word==null || word.isEmpty()) return;
         Node n=root;
-        ArrayList<Node> arr=root.getAllChildNodes();
         for(int i=0;i<word.length();++i){
             char ch=word.charAt(i);
             if(n.hasChild(ch)){
-                n=arr.get(ch-'a');
-                arr=n.getAllChildNodes();
+                n=n.getNode(ch);
             }
             else{
                 System.out.println("Spelled Wrong!");
                 return;
             }
         }
-        if(arr.get(26)==null){
+        if(!n.hasChild('*')){
             System.out.println("Do you mean? ");
             for(Node nn: n.getAllChildNodes()){
-                if(nn!=null)
                     printEachWord(nn, word+nn.getChar());
             }
         }else{

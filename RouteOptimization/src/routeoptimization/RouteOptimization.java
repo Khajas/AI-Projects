@@ -13,7 +13,7 @@ import routeoptimization.ReadData.ReadDistances;
 import routeoptimization.ReadData.ReadLongs;
 import routeoptimization.Visual.GUI;
 import java.util.Map;
-import java.util.Scanner;
+//import java.util.Scanner;
 import javax.swing.JFrame;
 
 /**
@@ -27,32 +27,32 @@ public class RouteOptimization {
      */
     public static void main(String[] args){
         // TODO code application logic here
-        String source, destination;
+//        String source, destination;
 //        String cityFile, longsFile;
-        Scanner sc=new Scanner(System.in);
+//        Scanner sc=new Scanner(System.in);
 //        System.out.print("City File location: "); cityFile=sc.nextLine();
-        ReadDistances rd=new ReadDistances("G:\\AI\\Assignments\\Assignment1\\RouteOptimization\\src\\routeoptimization\\DataSet\\roads1.txt");
+        ReadDistances rd=new ReadDistances("resources/DataSet/roads1.txt");
 //        ReadDistances rd=new ReadDistances(cityFile);
         Map<String, Node> distanceMap=rd.getDistanceMap();
 //        rd.readDistanceMap();
 
-//      System.out.print("Longitude File location: "); longsFile=sc.nextLine();
-        ReadLongs rl=new ReadLongs("G:\\AI\\Assignments\\Assignment1\\RouteOptimization\\src\\routeoptimization\\DataSet\\long1.txt");
+  //      System.out.print("Longitude File location: "); longsFile=sc.nextLine();
+        ReadLongs rl=new ReadLongs("resources/DataSet/long1.txt");
 //        ReadLongs rl=new ReadLongs(longsFile);
         Map<String, Integer> longsMap=rl.getLongMap();
 //        rl.readLongMap();
 
-	// GUI Object
+//+++++ GUI BUILD UP
 
         GUI guiFrame=new GUI("Route Optimization", distanceMap, longsMap);
         guiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         guiFrame.setSize(800,700);
         guiFrame.setVisible(true);
-/* Command line Code for debugging
-		
-        System.out.print("Source: "); source=sc.nextLine();
-        System.out.print("Destination: ");destination=sc.nextLine();
+//++++++++++++++++++++++++++++++++++++++++++++++++        
 
+//        System.out.print("Source: "); source=sc.nextLine();
+//       System.out.print("Destination: ");destination=sc.nextLine();
+/*
         System.out.println("\nBFS");
         BFS routeBFS=new BFS(guiFrame.source, destination, distanceMap);
         routeBFS.findRoute();

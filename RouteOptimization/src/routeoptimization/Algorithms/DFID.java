@@ -9,13 +9,10 @@
 package routeoptimization.Algorithms;
 
 import java.awt.Color;
-import static java.lang.Thread.sleep;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import routeoptimization.Visual.GraphicsPanel;
 import routeoptimization.Visual.MainPanel;
 
@@ -40,6 +37,10 @@ public class DFID extends SearchAlgorithm{
         sourceNode.setFValue(-1); sourceNode.setDepth(0);           // Initialize the f and depth values    
         while(currDepth <= max_level){                              // As long depth is no reached
             System.out.println("\nDepth Level: "+currDepth);
+            main_panel.jl_path.setText("Searching with depth level: "+currDepth);
+            graphics_panel.sleepThread();
+            graphics_panel.refreshMap();
+            graphics_panel.sleepThread();
             DFS(sourceNode,currDepth);                              // Call DFS on source node with current depth
             openList.clear();                                       // Clear all the history(lists)
             closedList.clear();
@@ -61,10 +62,13 @@ public class DFID extends SearchAlgorithm{
                 currNode.getParent().getCityName());
                 graphics_panel.sleepThread();
                 graphics_panel.threadState();
+                if(!graphics_panel.running) return;
             }
             visited.add(currNode.getCityName());
             if(foundDestination(currNode.getCityName(), destination)){
                 System.out.print("DFID Search Solution: "); showPath(currNode);
+                graphics_panel.sleepThread();
+                this.graphics_panel.colorCity(openList.get(0).getCityName(), Color.CYAN);
                 pathLastNode=currNode;          // If the destinaton is found, show the path & update pathLastNode
                 return;
             }
@@ -72,8 +76,13 @@ public class DFID extends SearchAlgorithm{
             main_panel.jl_nodes_expanded.setText(String.valueOf(nodesExpanded));
             if(level<=currNode.getDepth()){
                 System.out.println("Depth has reached");                            // If depth reached
+                main_panel.jl_path.setText("Depth has reached, destination not found!");
                 findAndRemoveNode(openList, currNode);                              // Remove the current node
+                if(currNode.getParent()!=null)
+                    this.graphics_panel.setRoad(Color.GREEN,currNode.getCityName(),
+                        currNode.getParent().getCityName());//
                 closedList.add(currNode.getCityName()+" "+currNode.getDepth());     // Update the close list
+                this.graphics_panel.colorCity(currNode.getCityName(), Color.CYAN);
                 System.out.print("Open List is ");displayNodeList(openList);        // Show open and closed lists
                 System.out.print("Closed List is ");displayStringList(closedList);
                 continue;
@@ -92,6 +101,7 @@ public class DFID extends SearchAlgorithm{
                     if(currNode.getDepth() >= level) continue;                  // ****If the current node is above or at current level, continue to check other nodes
                     visited.add(childNode.getCityName());                       // Else visit the child
                     childStack.push(childNode);                                 // push them to child stack
+                    this.graphics_panel.colorCity(childNode.getCityName(), Color.red);
                     openList.add(0,childNode);                                  // Add to the front of the open list
                 }
             }
@@ -99,7 +109,11 @@ public class DFID extends SearchAlgorithm{
                 nodeStack.push(childStack.pop());
             }
             System.out.println(" )");
-            findAndRemoveNode(openList,currNode);                               //Find and remove the current node from open list
+            findAndRemoveNode(openList,currNode);
+            if(currNode.getParent()!=null)
+                this.graphics_panel.setRoad(Color.GREEN,currNode.getCityName(),
+                currNode.getParent().getCityName());//Find and remove the current node from open list
+            this.graphics_panel.colorCity(currNode.getCityName(), Color.CYAN);
             closedList.add(currNode.getCityName()+" "+currNode.getDepth());     // Update the close list
             Collections.sort(openList, new SortFValues());                      // Sort the open list
             System.out.print("Open List is ");displayNodeList(openList);        // Display the open list and closed list

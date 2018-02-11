@@ -3,7 +3,6 @@ package routeoptimization.Visual;
 import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import routeoptimization.Visual.MainPanel;
 import routeoptimization.Algorithms.Node;
 
 /*
@@ -16,6 +15,7 @@ import routeoptimization.Algorithms.Node;
  *
  * @author Anwar
  */
+@SuppressWarnings("serial")
 public final class GUI extends JFrame{
     private MainPanel main_panel;
     // Constructors

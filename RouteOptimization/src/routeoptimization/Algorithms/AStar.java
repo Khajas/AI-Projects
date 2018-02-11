@@ -9,13 +9,10 @@
 package routeoptimization.Algorithms;
 // The following class is to implement A Star Search Algorithm
 import java.awt.Color;
-import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import routeoptimization.Visual.GraphicsPanel;
 import routeoptimization.Visual.MainPanel;
 
@@ -47,12 +44,13 @@ public class AStar extends SearchAlgorithm{
             Node n= openList.get(0);                    // Get the most preferred node
             System.out.print("\nExpanding "+n.getCityName().toUpperCase()+" f="+n.getFValue()+", g="+n.getGValue()+", h="+n.getHValue());
             if(!n.getCityName().equals(source)){
+                this.graphics_panel.setRoad(Color.RED,n.getCityName(),
+                        n.getParent().getCityName());
                 graphics_panel.sleepThread();
                 graphics_panel.threadState();
-                this.graphics_panel.setRoad(Color.RED,n.getCityName(),
-                n.getParent().getCityName());
             }
             if(foundDestination(n.getCityName(), destination)){
+                this.graphics_panel.colorCity(n.getCityName(), Color.CYAN);
                 pathLastNode=n;                         // If the destination node is found, set the pathLastNode(for path & distance finding)
                 return;                                 //  and return
             }
@@ -72,6 +70,7 @@ public class AStar extends SearchAlgorithm{
                     ++nodesGenerated;                               // Increment the nodes generated
                     main_panel.jl_nodes_expanded.setText(String.valueOf(nodesGenerated)+" Generated");
                     openList.add(ch);                               // Add it to the open list
+                    this.graphics_panel.colorCity(ch.getCityName(), Color.red);
                     visited.add(ch.getCityName());                  // and mark visited
                 }
                 else{                                                               
@@ -86,6 +85,10 @@ public class AStar extends SearchAlgorithm{
                 }
             }
             openList.remove(0);                                     // Remove the node from the open list
+            if(n.getParent()!=null)
+                this.graphics_panel.setRoad(Color.GREEN,n.getCityName(),
+                n.getParent().getCityName());//
+            this.graphics_panel.colorCity(n.getCityName(), Color.CYAN);
             closedList.add(n.getCityName()+" "+n.getFValue());      // and add it to the close list
             Collections.sort(openList, new SortFValues());          // Sort the open list based on F values
             System.out.print("Open List is ");displayNodeList(openList);        // Display the open list

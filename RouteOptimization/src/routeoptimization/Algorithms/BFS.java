@@ -9,12 +9,9 @@
 package routeoptimization.Algorithms;
 
 import java.awt.Color;
-import static java.lang.Thread.sleep;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import routeoptimization.Visual.GraphicsPanel;
 import routeoptimization.Visual.MainPanel;
 
@@ -46,6 +43,7 @@ public class BFS extends SearchAlgorithm{
                 if(!graphics_panel.running) return;
             }
             if(foundDestination(currNode.getCityName(), destination)){  // Check if it's our desintation
+                this.graphics_panel.colorCity(openList.get(0).getCityName(), Color.CYAN);
                 System.out.print("Breadth First Solution Path: ");  // If so, then display the path
                 pathLastNode=currNode;  // Set the current node as path's last node
                 showPath(currNode);     // For backtracking and showing the optimal path
@@ -64,10 +62,15 @@ public class BFS extends SearchAlgorithm{
                 if(!visited.contains(childNode.getCityName())){ // If this child is never visited
                     System.out.print(e.getKey().toUpperCase()+" "); // Then it's a new child
                     openList.add(childNode);        // Add it to the openList 
+                    this.graphics_panel.colorCity(childNode.getCityName(), Color.red);
                     visited.add(e.getKey());        // and finally mark it as visited
                 }
             }
             System.out.println(" )");
+            if(openList.get(0).getParent()!=null)
+                this.graphics_panel.setRoad(Color.GREEN,openList.get(0).getCityName(),
+                openList.get(0).getParent().getCityName());
+            this.graphics_panel.colorCity(openList.get(0).getCityName(), Color.CYAN);
             closedList.add(openList.get(0).getCityName()); // The current is expanded(Visited) and it's been closed, so add it to closed list
             openList.remove(0); // and remove it from openList
             System.out.print("Open List is ");  displayNodeList(openList);    //Finally display the openList

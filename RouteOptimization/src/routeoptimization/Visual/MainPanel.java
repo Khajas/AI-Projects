@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import routeoptimization.Algorithms.Node;
 
+@SuppressWarnings("serial")
 public final class MainPanel extends JPanel{
     GraphicsPanel graphics_panel;
     MainPanel mp;
@@ -21,10 +22,9 @@ public final class MainPanel extends JPanel{
     public JLabel  jl_algo_name, jl_read_only_label, jl_sleep_time,
             jl_source_name, jl_destination_name,
             jl_nodes_expanded, jl_path_length, jl_path;
-    private JButton btn_start, btn_pause, btn_stop;
+    private JButton btn_start, btn_pause, btn_stop, btn_sound;
     private final GridBagConstraints gbc;
     private final Map<String, Node> distanceMap;
-    private final Map<String, Integer> longsMap;
     private boolean paused=false;
     // Constructors
     MainPanel(Map<String, Node> distanceMap, Map<String, Integer> longsMap){
@@ -36,8 +36,6 @@ public final class MainPanel extends JPanel{
         this.init_graphicsPanel(longsMap);
         // Set the distance map
         this.distanceMap=new TreeMap<>(distanceMap);
-        // Set the longs Map
-        this.longsMap=longsMap;
         // Initialize Combo boxes
         this.init_comboxes();
         // Initialize Buttons
@@ -77,7 +75,7 @@ public final class MainPanel extends JPanel{
         String [] cities=new String[distanceMap.size()+1];
         int cityIdx=0; cities[cityIdx]="--Select--";
         cityIdx++;
-        for(Map.Entry e: distanceMap.entrySet()){
+        for(Map.Entry<?,?> e: distanceMap.entrySet()){
             cities[cityIdx]=(String) e.getKey().toString();
             ++cityIdx;
         }
@@ -89,7 +87,7 @@ public final class MainPanel extends JPanel{
                                 "AStar(H=0)","AStar(H=E-W Dist)"};
         cb_algorithm=new JComboBox<>(possibleAlgos);
         cb_algorithm.setMaximumRowCount(4);
-        String[] possibleDelays={"--Select--","500","1000","2000","3000"};
+        String[] possibleDelays={"--Select--","500 ms","1 sec","2 secs","3 secs"};
         cb_sleep_time=new JComboBox<>(possibleDelays);
         cb_sleep_time.setMaximumRowCount(4);
     }
@@ -97,6 +95,7 @@ public final class MainPanel extends JPanel{
         btn_start=new JButton("Start");
         btn_pause=new JButton("Pause");
         btn_stop=new JButton("Stop");
+        btn_sound=new JButton("Sound Off");
     }
     private void init_Labels(){
         jl_algo_name=new JLabel("Not yet Selected!");
@@ -117,7 +116,7 @@ public final class MainPanel extends JPanel{
         jl_read_only_label=new JLabel("Algorithm: ");
         this.addComponent(jl_read_only_label,gbc,8,8,1,1);
         this.addComponent(cb_algorithm,gbc,9,8,2,1);
-        jl_read_only_label=new JLabel("Timer(ms): ");
+        jl_read_only_label=new JLabel("Timer: ");
         this.addComponent(jl_read_only_label,gbc,8,9,1,1);
         this.addComponent(cb_sleep_time,gbc,9,9,2,1);
     }
@@ -166,6 +165,7 @@ public final class MainPanel extends JPanel{
         this.addComponent(btn_start, gbc, 8,10,1,1);
         this.addComponent(btn_pause, gbc, 9,10,1,1);
         this.addComponent(btn_stop, gbc, 10,10,1,1);
+        this.addComponent(btn_sound, gbc, 8,11,3,1);
     }
 
     private void addActionHandler() {
@@ -177,6 +177,7 @@ public final class MainPanel extends JPanel{
         this.btn_start.addActionListener(handler);
         this.btn_pause.addActionListener(handler);
         this.btn_stop.addActionListener(handler);
+        this.btn_sound.addActionListener(handler);
         this.init_configuration();
     }
     
@@ -216,7 +217,7 @@ public final class MainPanel extends JPanel{
                  graphics_panel.highLightCity(destination);
              }
              else if(e.getSource()==cb_sleep_time){
-                 String sleep_period=(String)cb_sleep_time.getSelectedItem();
+                 String sleep_period=String.valueOf(cb_sleep_time.getSelectedItem());
                  // Here get the algo index too
                  jl_sleep_time.setText(sleep_period);
                  btn_start.setEnabled(true);
@@ -230,13 +231,17 @@ public final class MainPanel extends JPanel{
                  graphics_panel.algorithmName=cb_algorithm.getSelectedItem().toString();
                  mp.jl_path.setText("Discovering!");
                  try{
-                     graphics_panel.sleepTime=Integer.valueOf(cb_sleep_time.getSelectedItem().toString());
+                     int timerSelection=cb_sleep_time.getSelectedIndex();
+                     if(timerSelection==0) timerSelection=500;
+                     else timerSelection*=1000;
+                     graphics_panel.sleepTime=timerSelection;
                  }
                  catch(NumberFormatException ex){
                      return;
                  }
                  th=new Thread(graphics_panel);
-                 th.start();
+                 if(!th.isAlive())
+                    th.start();
                  btn_pause.setEnabled(true);
                  btn_stop.setEnabled(true);
                  btn_start.setEnabled(false);
@@ -256,8 +261,19 @@ public final class MainPanel extends JPanel{
              }
              else if(e.getSource()==btn_stop){
                 graphics_panel.stop();
+                btn_pause.setText("Pause");
                 btn_pause.setEnabled(false);
                 btn_start.setEnabled(true);
+                th.interrupt();
+             }
+             else if(e.getSource()==btn_sound){
+                 if(graphics_panel.soundON){
+                     graphics_panel.soundON=false;
+                     btn_sound.setText("Toggle Sound: OFF");
+                 }else{
+                     graphics_panel.soundON=true;
+                     btn_sound.setText("Toggle Sound: ON");
+                 }
              }
              btn_start.setEnabled(true);
         }        

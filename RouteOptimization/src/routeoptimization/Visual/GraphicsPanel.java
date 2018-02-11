@@ -6,14 +6,19 @@
 package routeoptimization.Visual;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import routeoptimization.Algorithms.AStar;
@@ -28,8 +33,12 @@ import routeoptimization.Algorithms.Node;
  * @author Anwar
  */
 
-public class GraphicsPanel extends JPanel implements Runnable{
-    ArrayList<City> citiesLoc;
+public final class GraphicsPanel extends JPanel implements Runnable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	ArrayList<City> citiesLoc;
     Graphics2D localGraphics;
     ArrayList<Road> roads;
     public boolean initCitiesFlag;
@@ -38,12 +47,14 @@ public class GraphicsPanel extends JPanel implements Runnable{
     public String source, destination;
     public String algorithmName;
     public Map<String, Integer> longsMap;
-    public int sleepTime;
+    public int sleepTime=100;
+    public boolean soundON=true;
     public volatile boolean running = true;
     private volatile boolean paused = false;
     private final Object pauseLock;
+    private JLabel cityLabel;
     GraphicsPanel(Map<String, Integer> longsMap){
-        super(new BorderLayout());
+        super(null);
         super.setPreferredSize(new Dimension(500,500));
         super.setVisible(true);
         super.setOpaque(false);
@@ -52,20 +63,43 @@ public class GraphicsPanel extends JPanel implements Runnable{
         this.initCitiesFlag=true;
         roads=new ArrayList<>();
         this.makeRoads();
+        cityLabel=new JLabel("");
         distanceMap=new HashMap<>();
         this.longsMap=longsMap;
-        super.add(new JLabel("French Cities"), BorderLayout.WEST);
         this.pauseLock=new Object();
+        this.addCityNameLabels();
     }
+    public void addCityNameLabels(){
+        cityLabel=new JLabel("Map of french Cities");
+        this.add(cityLabel);
+        Dimension size = cityLabel.getPreferredSize();
+        cityLabel.setBounds(0, 0, size.width, size.height);
+        for(City c: citiesLoc){
+            cityLabel=new JLabel(c.getCityName());
+            this.add(cityLabel);
+            size = cityLabel.getPreferredSize();
+            cityLabel.setBounds(c.getLatt()+7, c.getLng()+7, size.width, size.height);
+        }
+    }
+    
     public void highLightCity(String name){
         for(City c: citiesLoc){
             if(c.getCityName().equals(name)){
+                c.setColor(Color.BLUE);
                 c.setShape("enlarge");
             }
-            else c.setShape("normal");
+            else{
+                c.setColor(Color.BLACK);
+                c.setShape("normal");
+            }
         }
         this.repaint();
-//        this.localGraphics.setColor(Color.BLACK);
+    }
+    public void colorCity(String name, Color clr){
+        for(City c: citiesLoc){
+            if(name.equals(c.getCityName()))
+                c.setColor(clr);
+        }
     }
     public void refreshMap(){
         this.initCitiesFlag=true;
@@ -73,12 +107,16 @@ public class GraphicsPanel extends JPanel implements Runnable{
             r.setColor(Color.BLACK);
             r.setMark(true);
         }
+        for(City c: citiesLoc){
+            c.setColor(Color.BLACK);
+        }
         this.repaint();
     }
     @Override
     public void paintComponent(Graphics g){
         localGraphics=(Graphics2D)g;
-        localGraphics.setStroke(new BasicStroke(3));
+        localGraphics.setStroke(new BasicStroke(4));
+//        this.sleepThread();
         if(this.initCitiesFlag){
             citiesLoc.forEach((c) -> {
                 drawCity(localGraphics,c.getLatt(),c.getLng(),
@@ -102,7 +140,6 @@ public class GraphicsPanel extends JPanel implements Runnable{
         if(c1!=null && c2!=null){
             g.drawLine(c1.getLatt(), c1.getLng(), c2.getLatt(), c2.getLng());
         }
-        g.setColor(Color.BLUE);
     }
     
     private void drawCity(Graphics g,int x, int y, City c){
@@ -112,28 +149,31 @@ public class GraphicsPanel extends JPanel implements Runnable{
         if(c.getShape().equals("enlarge")
                 | c.getCityName().equals(source)
                 | c.getCityName().equals(destination)){
-            a_axis=15;
-            b_axis=15;
+            a_axis=20;
+            b_axis=20;
         }
         else if(c.getShape().equals("normal")){
-            a_axis=5;
-            b_axis=5;
+            a_axis=10;
+            b_axis=10;
         }
+        g.setColor(c.getColor());
         g.drawOval(x,y,a_axis,b_axis);
     }
     public void setRoad(Color c,String source, String destination){
-        for(Road r: roads){
+        roads.stream().map((r) -> {
             if(r.getDestinationCity().equals(source) &&
                     r.getSourceCity().equals(destination)){
                 r.setMark(true);
                 r.setColor(c);
             }
-            if(r.getDestinationCity().equals(destination) &&
-                    r.getSourceCity().equals(source)){
-                r.setMark(true);
-                r.setColor(c);
-            }
-        }
+            return r;
+        }).filter((r) -> (r.getDestinationCity().equals(destination) &&
+                r.getSourceCity().equals(source))).map((r) -> {
+                    r.setMark(true);
+            return r;
+        }).forEachOrdered((r) -> {
+            r.setColor(c);
+        });
     }
     private void assignLocs(){
         citiesLoc.add(new City("calais",220,5));      // Calais
@@ -192,49 +232,68 @@ public class GraphicsPanel extends JPanel implements Runnable{
         paused = false;
         this.mp.jl_path_length.setText("Calculating!");
         if(algorithmName.equals("BFS")){
-            System.out.println("\nBFS");
-            BFS routeBFS=new BFS(this,mp,source,destination, distanceMap);
-            routeBFS.findRoute();
-            System.out.println("\nPath-length: "+routeBFS.getRouteDistance()+"kms");
-            System.out.println(routeBFS.getNodesExpanded()+" nodes Expanded");
-        }
-        else if(algorithmName.equals("DFS")){
-            System.out.println("\nDFS");
-            DFS routeDFS=new DFS(this,mp,source, destination, distanceMap);
-            routeDFS.findRoute();
-            System.out.println("\nPath-length: "+routeDFS.getRouteDistance()+"kms");
-            System.out.println(routeDFS.getNodesExpanded()+" nodes Expanded");
-        }
-        else if(algorithmName.equals("DFID")){
-            System.out.println("\nDFID with Level = 3");
-            DFID routeDFID=new DFID(this, mp,source, destination, 3, distanceMap); // Level =3
-            routeDFID.findRoute();
-            System.out.println("\nPath-length: "+routeDFID.getRouteDistance()+"kms");
-            System.out.println(routeDFID.getNodesExpanded()+" nodes Expanded");
+                System.out.println("\nBFS");
+                BFS routeBFS=new BFS(this,mp,source,destination, distanceMap);
+                routeBFS.findRoute();
+                System.out.println("\nPath-length: "+routeBFS.getRouteDistance()+"kms");
+                System.out.println(routeBFS.getNodesExpanded()+" nodes Expanded");
+        }else if(algorithmName.equals("DFS")){
+                System.out.println("\nDFS");
+                DFS routeDFS=new DFS(this,mp,source, destination, distanceMap);
+                routeDFS.findRoute();
+                System.out.println("\nPath-length: "+routeDFS.getRouteDistance()+"kms");
+                System.out.println(routeDFS.getNodesExpanded()+" nodes Expanded");
+        }else if(algorithmName.equals("DFID")){
+                System.out.println("\nDFID with Level = 3");
+                DFID routeDFID=new DFID(this, mp,source, destination, 3, distanceMap); // Level =3
+                routeDFID.findRoute();
+                System.out.println("\nPath-length: "+routeDFID.getRouteDistance()+"kms");
+                System.out.println(routeDFID.getNodesExpanded()+" nodes Expanded");
         }
         else if(algorithmName.equals("H_ONLY")){
-            System.out.println("\nH_ONLY");
-            H_ONLY routeH_Only=new H_ONLY(this,mp,source, destination, distanceMap, longsMap);
-            routeH_Only.findRoute();        
-            System.out.println("\nPath-length: "+routeH_Only.getRouteDistance()+"kms");
-            System.out.println(routeH_Only.getNodesGenerated()+" nodes Generated");            
+                System.out.println("\nH_ONLY");
+                H_ONLY routeH_Only=new H_ONLY(this,mp,source, destination, distanceMap, longsMap);
+                routeH_Only.findRoute();
+                System.out.println("\nPath-length: "+routeH_Only.getRouteDistance()+"kms");
+                System.out.println(routeH_Only.getNodesGenerated()+" nodes Generated");
         }
         else if(algorithmName.equals("AStar(H=0)")){
-            System.out.println("\nA* with H=0");
-            AStar routeAStarH0=new AStar(this,mp,source, destination, distanceMap, longsMap, false);
-            routeAStarH0.findRoute();
-            System.out.print("\nAStar Solution Path with h=0: ");         routeAStarH0.showPath();
-            System.out.println("\nPath-length: "+routeAStarH0.getRouteDistance()+"kms");
-            System.out.println(routeAStarH0.getNodesGenerated()+" nodes Generated");
+                System.out.println("\nA* with H=0");
+                AStar routeAStarH0=new AStar(this,mp,source, destination, distanceMap, longsMap, false);
+                routeAStarH0.findRoute();
+                System.out.print("\nAStar Solution Path with h=0: ");
+                routeAStarH0.showPath();
+                System.out.println("\nPath-length: "+routeAStarH0.getRouteDistance()+"kms");
+                System.out.println(routeAStarH0.getNodesGenerated()+" nodes Generated");
         }
         else if(algorithmName.equals("AStar(H=E-W Dist)")){
-            System.out.println("\nA* with H=EAST-WEST DISTANCE");
-            AStar routeAStar=new AStar(this, mp,source, destination, distanceMap, longsMap, true);
-            routeAStar.findRoute();
-            System.out.print("\nA-start-search Solution: ");         routeAStar.showPath();
-            System.out.println("\nPath-length: "+routeAStar.getRouteDistance()+"kms");
-            System.out.println(routeAStar.getNodesGenerated()+" nodes Generated");
+                System.out.println("\nA* with H=EAST-WEST DISTANCE");
+                AStar routeAStar=new AStar(this, mp,source, destination, distanceMap, longsMap, true);
+                routeAStar.findRoute();
+                System.out.print("\nA-start-search Solution: ");
+                routeAStar.showPath();
+                System.out.println("\nPath-length: "+routeAStar.getRouteDistance()+"kms");
+                System.out.println(routeAStar.getNodesGenerated()+" nodes Generated");
         }
+    }
+    public void playSound(String path){
+        if(soundON)
+            try {
+                File yourFile = new File(path);
+                AudioInputStream stream;
+                AudioFormat format;
+                DataLine.Info info;
+                Clip clip;
+                stream = AudioSystem.getAudioInputStream(yourFile);
+                format = stream.getFormat();
+                info = new DataLine.Info(Clip.class, format);
+                clip = (Clip) AudioSystem.getLine(info);
+                clip.open(stream);
+                clip.start();
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
     }
     /**--------------------------------------------------------
      * Method sleepThread():
@@ -242,6 +301,7 @@ public class GraphicsPanel extends JPanel implements Runnable{
      * Time is set by the radio button sets(fast, medium, slow).
      *-------------------------------------------------------*/
     public void sleepThread(){
+        this.playSound("resources/Sounds/Search.wav");
         try{
             Thread.sleep(sleepTime);
             this.repaint();
@@ -250,7 +310,7 @@ public class GraphicsPanel extends JPanel implements Runnable{
             System.out.println("Error! : "+ie.getMessage());
         }
     }
-        /**--------------------------------------------------------
+     /**--------------------------------------------------------
      * Method threadState():
      *  The following is called for each operation on the array list items,
      * like, before swapping the values to check the state of the thread.
@@ -306,6 +366,7 @@ public class GraphicsPanel extends JPanel implements Runnable{
     public void resume() {
         synchronized (pauseLock) {
             paused = false;
+            running=true;
             pauseLock.notifyAll(); // Unblocks thread
         }
     }
@@ -347,11 +408,19 @@ class City{
     private final int lng;
     private final int latt;
     private String shape;
+    private Color clr;
     City(String name, int latt, int lng){
         this.name=name;
         this.lng=lng;
         this.latt=latt;
         this.shape="normal";
+        this.clr=Color.BLACK;
+    }
+    void setColor(Color clr){
+        this.clr=clr;
+    }
+    Color getColor(){
+        return this.clr;
     }
     void setShape(String shape){
         this.shape=shape;

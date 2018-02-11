@@ -9,12 +9,9 @@
 package routeoptimization.Algorithms;
 
 import java.awt.Color;
-import static java.lang.Thread.sleep;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import routeoptimization.Visual.GraphicsPanel;
 import routeoptimization.Visual.MainPanel;
 
@@ -50,10 +47,12 @@ public class H_ONLY extends SearchAlgorithm{
                 currNode.getParent().getCityName());
                 graphics_panel.sleepThread();
                 graphics_panel.threadState();
+                if(!graphics_panel.running) return;
             }
             if(foundDestination(currNode.getCityName(), destination)){
                 System.out.print("\nH_ONLY Solution Path: "); 
                 System.out.print("( "); 
+                this.graphics_panel.colorCity(currNode.getCityName(), Color.CYAN);
                 showPath(currNode); System.out.print(" )");
                 pathLastNode=currNode;                         // Once the route is found display the route and update the pathLastNode
                 return;
@@ -70,10 +69,15 @@ public class H_ONLY extends SearchAlgorithm{
                     childNode.setHValue(h_ch);
                     childNode.setFValue(h_ch);
                     openList.add(childNode);                                    // Add it to the open list
+                    this.graphics_panel.colorCity(childNode.getCityName(), Color.red);
                     visited.add(childNode.getCityName());                       // and mark it as visited
                 }
             }
             openList.remove(0);                                                 // Remove the current node
+            if(currNode.getParent()!=null)
+                this.graphics_panel.setRoad(Color.GREEN,currNode.getCityName(),
+                currNode.getParent().getCityName());//
+            this.graphics_panel.colorCity(currNode.getCityName(), Color.CYAN);
             closedList.add(currNode.getCityName()+" "+currNode.getHValue());    // add it to the closed list
             Collections.sort(openList, new SortHValues());                      // sort the open list
             System.out.print("Open List is "); displayNodeList(openList);       // display open and closed lists

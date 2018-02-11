@@ -9,12 +9,9 @@
 package routeoptimization.Algorithms;
 
 import java.awt.Color;
-import static java.lang.Thread.sleep;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import routeoptimization.Visual.GraphicsPanel;
 import routeoptimization.Visual.MainPanel;
 
@@ -46,8 +43,10 @@ public class DFS extends SearchAlgorithm{
                 currNode.getParent().getCityName());
                 graphics_panel.sleepThread();
                 graphics_panel.threadState();
+                if(!graphics_panel.running) return;
             }
             if(foundDestination(currNode.getCityName(), destination)){  // Check if it's the destination that we're looking for
+                this.graphics_panel.colorCity(openList.get(0).getCityName(), Color.CYAN);
                 System.out.print("Depath First Search Solution: "); // If so
                 pathLastNode=currNode;                          // mark the last node for back tracking
                 showPath(currNode);                             // show the solution path
@@ -75,10 +74,15 @@ public class DFS extends SearchAlgorithm{
             while(!childNodeStack.isEmpty()){   // If the current node has children
                 Node chd=childNodeStack.pop();  // Get the children
                 nodesStack.push(chd);           // and push them into the node stack
+                this.graphics_panel.colorCity(chd.getCityName(), Color.red);
                 openList.add(0,chd);            // Append the open list from front
             }
             System.out.println(" )");
             findAndRemoveNode(openList,currNode);                               //Find and remove the current node from list
+            if(currNode.getParent()!=null)
+                this.graphics_panel.setRoad(Color.GREEN,currNode.getCityName(),
+                currNode.getParent().getCityName());//
+            this.graphics_panel.colorCity(currNode.getCityName(), Color.CYAN);
             closedList.add(currNode.getCityName());                             // add the current node to the closing list
             System.out.print("Open List is ");displayNodeList(openList);        // Print the open list
             System.out.print("Closed List is ");displayStringList(closedList);  // print the closed list
